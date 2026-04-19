@@ -38,6 +38,9 @@ livro/
 materiais/
 *.pdf
 
+# Claude Code (configurações locais com permissões — não versionar)
+.claude/settings.local.json
+
 # Arquivos temporários do Excel
 ~$*.xlsx
 ~$*.xls
