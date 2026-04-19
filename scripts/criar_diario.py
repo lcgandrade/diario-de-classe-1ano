@@ -118,9 +118,8 @@ def add_presenca_sheets(wb):
         ws.freeze_panes = "C2"
 
 def add_notas_sheets(wb):
-    red_fill    = _fill("FFC7CE")
-    yellow_fill = _fill("FFEB9C")
-    green_fill  = _fill("C6EFCE")
+    red_fill  = _fill("FFC7CE")   # Reprovado: nota < 5
+    blue_fill = _fill("DDEBF7")   # Aprovado: nota >= 5
 
     for b in BIMESTRES:
         ws = wb.create_sheet(f"Notas - {b}")
@@ -143,16 +142,13 @@ def add_notas_sheets(wb):
             for col in range(1, 10):
                 estilizar_dado(ws.cell(row=row, column=col))
 
-        # Formatação condicional: vermelho < 5, amarelo 5–6.9, verde >= 7
+        # Formatação condicional: vermelho (Reprovado) < 5, azul (Aprovado) >= 5
         grade_range = f"C2:I{N_ALUNOS + 1}"
         ws.conditional_formatting.add(
             grade_range, CellIsRule(operator="lessThan", formula=["5"], fill=red_fill)
         )
         ws.conditional_formatting.add(
-            grade_range, CellIsRule(operator="between", formula=["5", "6.99"], fill=yellow_fill)
-        )
-        ws.conditional_formatting.add(
-            grade_range, CellIsRule(operator="greaterThanOrEqual", formula=["7"], fill=green_fill)
+            grade_range, CellIsRule(operator="greaterThanOrEqual", formula=["5"], fill=blue_fill)
         )
 
         ws.freeze_panes = "C2"
@@ -186,7 +182,7 @@ def add_recuperacao(wb):
 
     ws.conditional_formatting.add(
         "G2:G41",
-        CellIsRule(operator="equal", formula=['"Aprovado"'], fill=_fill("C6EFCE"))
+        CellIsRule(operator="equal", formula=['"Aprovado"'], fill=_fill("DDEBF7"))
     )
     ws.conditional_formatting.add(
         "G2:G41",
@@ -312,7 +308,7 @@ def add_resumo(wb):
     # Cores para Situação
     ws.conditional_formatting.add(
         f"I3:I{N_ALUNOS + 2}",
-        CellIsRule(operator="equal", formula=['"Aprovado"'], fill=_fill("C6EFCE"))
+        CellIsRule(operator="equal", formula=['"Aprovado"'], fill=_fill("DDEBF7"))
     )
     ws.conditional_formatting.add(
         f"I3:I{N_ALUNOS + 2}",
