@@ -12,39 +12,42 @@ Disciplinas: Português, Matemática, Ciências, História, Geografia, Artes.
 - [x] Levantamento de requisitos com a professora
 - [x] Design aprovado das duas planilhas
 - [x] Documento de spec criado em `docs/superpowers/specs/2026-04-19-diario-professor-design.md`
+- [x] Plano de implementação criado em `docs/superpowers/plans/2026-04-19-diario-professor.md`
 - [x] Criação da pasta `.claude` com este ROADMAP
+- [x] Setup Python 3.11 + openpyxl 3.1.2
+- [x] `diario-de-classe.xlsx` — Aba Turma (27 alunos, headers, formatação)
+- [x] `diario-de-classe.xlsx` — Abas Presença mensais Fev-Nov (P/F/J, totalizadores, alerta 75%)
+- [x] `diario-de-classe.xlsx` — Abas Notas B1-B4 (6 disciplinas, Média Geral, cores condicional)
+- [x] `diario-de-classe.xlsx` — Aba Recuperação (40 linhas, Situação Final automática)
+- [x] `diario-de-classe.xlsx` — Aba Contatos e Reuniões
+- [x] `diario-de-classe.xlsx` — Aba Ocorrências
+- [x] `diario-de-classe.xlsx` — Aba Resumo Anual (médias, frequência, situação)
+- [x] `planejamento-semanal.xlsx` — Calendário Letivo com bimestres e feriados
+- [x] `planejamento-semanal.xlsx` — Planejamento B1-B4 (semanas × disciplinas × conteúdo/objetivo/atividade/realizado)
 
 ---
 
-## EM ANDAMENTO
+## PRÓXIMAS FASES (aguardando)
 
-- [ ] Criar `diario-de-classe.xlsx` com todas as abas
-- [ ] Criar `planejamento-semanal.xlsx` com estrutura base
-
----
-
-## TODO
-
-### diario-de-classe.xlsx
-- [ ] Aba `Turma` — lista de 27 alunos com campos e flag de aluno especial
-- [ ] Abas `Presença - [Mês]` — controle mensal P/F/J com totais e alerta de 75%
-- [ ] Aba `Notas - B1` a `B4` — notas por disciplina com formatação condicional (vermelho/amarelo/verde)
-- [ ] Aba `Recuperação` — lista automática de alunos abaixo de 5
-- [ ] Aba `Contatos e Reuniões` — registro de interações com responsáveis
-- [ ] Aba `Ocorrências` — registro de ocorrências relevantes
-- [ ] Aba `Resumo Anual` — painel consolidado com médias e situação final
-
-### planejamento-semanal.xlsx
-- [ ] Aba `Calendário Letivo` — datas de bimestres, feriados, eventos
-- [ ] Abas `B1` a `B4 - Planejamento` — estrutura por semana/disciplina com campo "Realizado?"
-
-### Próximas fases (aguardando)
-- [ ] Preencher conteúdo do planejamento semanal conforme livro didático (aguardando entrega do livro)
-- [ ] Adaptar metodologia conforme orientações da escola
+- [ ] Professora adiciona o livro didático à pasta do projeto
+- [ ] Preencher conteúdo das aulas no planejamento semanal conforme livro e metodologia da escola
+- [ ] Ajustar datas no Calendário Letivo conforme calendário municipal real
+- [ ] (Opcional) Adicionar nomes reais dos alunos na aba Turma
 
 ---
 
-## NOTAS
-- O livro didático será adicionado à pasta do projeto futuramente para geração do planejamento semanal com conteúdo real
-- O aluno especial deve ser destacado em todas as abas relevantes
-- Frequência mínima legal: 75% (LDB) — alertas visuais incluídos
+## ARQUIVOS GERADOS
+
+| Arquivo | Abas | Uso |
+|---------|------|-----|
+| `diario-de-classe.xlsx` | 19 abas | Uso diário |
+| `planejamento-semanal.xlsx` | 5 abas | Uso semanal |
+
+## COMO REGENERAR
+
+Se precisar regenerar os arquivos após alterações no script:
+
+```bash
+python scripts/criar_diario.py
+python scripts/criar_planejamento.py
+```
