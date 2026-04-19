@@ -67,12 +67,63 @@ def add_turma(wb):
     ws.freeze_panes = "B2"
     return ws
 
+def add_presenca_sheets(wb):
+    red_fill = _fill("FFC7CE")
+
+    for mes in MESES:
+        ws = wb.create_sheet(f"Presença - {mes}")
+        ws.sheet_properties.tabColor = "2E75B6"
+
+        # Cabeçalhos fixos
+        aplicar_header(ws.cell(row=1, column=1), "Nº")
+        aplicar_header(ws.cell(row=1, column=2), "Nome")
+
+        # Dias 1-31
+        for dia in range(1, 32):
+            aplicar_header(ws.cell(row=1, column=2 + dia), str(dia))
+            ws.column_dimensions[get_column_letter(2 + dia)].width = 4
+
+        # Totalizadores
+        for titulo, col in [("Total P", 34), ("Total F", 35), ("Total J", 36), ("% Freq", 37)]:
+            aplicar_header(ws.cell(row=1, column=col), titulo)
+            ws.column_dimensions[get_column_letter(col)].width = 9
+
+        ws.row_dimensions[1].height = 25
+        ws.column_dimensions["A"].width = 5
+        ws.column_dimensions["B"].width = 30
+
+        for row in range(2, N_ALUNOS + 2):
+            ws.cell(row=row, column=1, value=row - 1)
+            ws.cell(row=row, column=2).value = f"=Turma!B{row}"
+
+            # Fórmulas de contagem: dias ficam em C-AG (cols 3-33)
+            ws.cell(row=row, column=34).value = f'=COUNTIF(C{row}:AG{row},"P")'
+            ws.cell(row=row, column=35).value = f'=COUNTIF(C{row}:AG{row},"F")'
+            ws.cell(row=row, column=36).value = f'=COUNTIF(C{row}:AG{row},"J")'
+            ws.cell(row=row, column=37).value = (
+                f"=IF((AH{row}+AI{row}+AJ{row})=0,"
+                f'"-",AH{row}/(AH{row}+AI{row}+AJ{row}))'
+            )
+            ws.cell(row=row, column=37).number_format = "0.0%"
+
+            for col in range(1, 38):
+                estilizar_dado(ws.cell(row=row, column=col))
+
+        # Alerta vermelho para % Freq < 75%
+        ws.conditional_formatting.add(
+            f"AK2:AK{N_ALUNOS + 1}",
+            CellIsRule(operator="lessThan", formula=["0.75"], fill=red_fill)
+        )
+
+        ws.freeze_panes = "C2"
+
 def main():
     saida = os.path.join(os.path.dirname(__file__), "..", "diario-de-classe.xlsx")
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
     add_turma(wb)
+    add_presenca_sheets(wb)
 
     wb.save(saida)
     print(f"Gerado: {os.path.abspath(saida)}")
