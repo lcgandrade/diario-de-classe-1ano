@@ -252,6 +252,73 @@ def add_ocorrencias(wb):
 
     ws.freeze_panes = "A2"
 
+
+def add_resumo(wb):
+    ws = wb.create_sheet("Resumo Anual")
+    ws.sheet_properties.tabColor = "404040"
+
+    # Linha 1: título
+    ws.merge_cells("A1:L1")
+    t = ws.cell(row=1, column=1, value="RESUMO ANUAL — 1º ANO")
+    t.font = Font(bold=True, size=14, color=COR_BRANCO)
+    t.fill = _fill("404040")
+    t.alignment = _center()
+    ws.row_dimensions[1].height = 35
+
+    # Linha 2: cabeçalhos
+    headers = ["Nº", "Nome", "Freq. %"] + [f"Média {b}" for b in BIMESTRES] + ["Média Final", "Situação"]
+    larguras = [5, 30, 9] + [11] * 4 + [12, 16]
+    for col, (h, w) in enumerate(zip(headers, larguras), 1):
+        aplicar_header(ws.cell(row=2, column=col), h)
+        ws.column_dimensions[get_column_letter(col)].width = w
+
+    ws.row_dimensions[2].height = 25
+
+    for row in range(3, N_ALUNOS + 3):
+        aluno_row = row - 1  # linha correspondente nas abas de notas (começa em 2)
+        ws.cell(row=row, column=1, value=row - 2)
+        ws.cell(row=row, column=2).value = f"=Turma!B{aluno_row + 1}"
+
+        # Frequência: média das % de todos os meses (cols AK nas abas de presença)
+        freq_refs = "+".join([f"'Presença - {m}'!AK{aluno_row + 1}" for m in MESES])
+        ws.cell(row=row, column=3).value = f"=IFERROR(({freq_refs})/{len(MESES)},\"\")"
+        ws.cell(row=row, column=3).number_format = "0.0%"
+
+        # Médias por bimestre
+        for b_idx, b in enumerate(BIMESTRES):
+            col = 4 + b_idx
+            ws.cell(row=row, column=col).value = f"='Notas - {b}'!I{aluno_row + 1}"
+            ws.cell(row=row, column=col).number_format = "0.0"
+
+        # Média Final
+        ws.cell(row=row, column=8).value = f"=IFERROR(AVERAGE(D{row}:G{row}),\"\")"
+        ws.cell(row=row, column=8).number_format = "0.0"
+
+        # Situação
+        ws.cell(row=row, column=9).value = (
+            f'=IF(H{row}="","",IF(AND(H{row}>=5,C{row}>=0.75),"Aprovado",'
+            f'IF(H{row}>=5,"Rec. Freq.","Recuperação")))'
+        )
+
+        for col in range(1, 10):
+            estilizar_dado(ws.cell(row=row, column=col))
+
+    # Cores para Situação
+    ws.conditional_formatting.add(
+        f"I3:I{N_ALUNOS + 2}",
+        CellIsRule(operator="equal", formula=['"Aprovado"'], fill=_fill("C6EFCE"))
+    )
+    ws.conditional_formatting.add(
+        f"I3:I{N_ALUNOS + 2}",
+        CellIsRule(operator="equal", formula=['"Recuperação"'], fill=_fill("FFC7CE"))
+    )
+    ws.conditional_formatting.add(
+        f"I3:I{N_ALUNOS + 2}",
+        CellIsRule(operator="equal", formula=['"Rec. Freq."'], fill=_fill("FFEB9C"))
+    )
+
+    ws.freeze_panes = "C3"
+
 def main():
     saida = os.path.join(os.path.dirname(__file__), "..", "diario-de-classe.xlsx")
     wb = openpyxl.Workbook()
@@ -263,6 +330,7 @@ def main():
     add_recuperacao(wb)
     add_contatos(wb)
     add_ocorrencias(wb)
+    add_resumo(wb)
 
     wb.save(saida)
     print(f"Gerado: {os.path.abspath(saida)}")
