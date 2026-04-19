@@ -149,7 +149,7 @@ def add_notas_sheets(wb):
             grade_range, CellIsRule(operator="lessThan", formula=["5"], fill=red_fill)
         )
         ws.conditional_formatting.add(
-            grade_range, CellIsRule(operator="between", formula=["5", "6.9"], fill=yellow_fill)
+            grade_range, CellIsRule(operator="between", formula=["5", "6.99"], fill=yellow_fill)
         )
         ws.conditional_formatting.add(
             grade_range, CellIsRule(operator="greaterThanOrEqual", formula=["7"], fill=green_fill)
@@ -215,9 +215,15 @@ def add_contatos(wb):
 
     ws.row_dimensions[1].height = 25
 
-    for row in range(2, 102):  # 100 linhas
+    for row in range(2, 102):
         for col in range(1, 8):
-            estilizar_dado(ws.cell(row=row, column=col), centralizar=(col in [1, 2, 5]))
+            c = ws.cell(row=row, column=col)
+            c.border = _border()
+            if col in [1, 2, 5]:
+                c.alignment = Alignment(horizontal="center", vertical="top", wrap_text=True)
+            else:
+                c.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+        ws.row_dimensions[row].height = 40
 
     ws.freeze_panes = "A2"
 
@@ -258,7 +264,7 @@ def add_resumo(wb):
     ws.sheet_properties.tabColor = "404040"
 
     # Linha 1: título
-    ws.merge_cells("A1:L1")
+    ws.merge_cells("A1:I1")
     t = ws.cell(row=1, column=1, value="RESUMO ANUAL — 1º ANO")
     t.font = Font(bold=True, size=14, color=COR_BRANCO)
     t.fill = _fill("404040")
@@ -277,17 +283,17 @@ def add_resumo(wb):
     for row in range(3, N_ALUNOS + 3):
         aluno_row = row - 1  # linha correspondente nas abas de notas (começa em 2)
         ws.cell(row=row, column=1, value=row - 2)
-        ws.cell(row=row, column=2).value = f"=Turma!B{aluno_row + 1}"
+        ws.cell(row=row, column=2).value = f"=Turma!B{aluno_row}"
 
         # Frequência: média das % de todos os meses (cols AK nas abas de presença)
-        freq_refs = "+".join([f"'Presença - {m}'!AK{aluno_row + 1}" for m in MESES])
+        freq_refs = "+".join([f"'Presença - {m}'!AK{aluno_row}" for m in MESES])
         ws.cell(row=row, column=3).value = f"=IFERROR(({freq_refs})/{len(MESES)},\"\")"
         ws.cell(row=row, column=3).number_format = "0.0%"
 
         # Médias por bimestre
         for b_idx, b in enumerate(BIMESTRES):
             col = 4 + b_idx
-            ws.cell(row=row, column=col).value = f"='Notas - {b}'!I{aluno_row + 1}"
+            ws.cell(row=row, column=col).value = f"='Notas - {b}'!I{aluno_row}"
             ws.cell(row=row, column=col).number_format = "0.0"
 
         # Média Final

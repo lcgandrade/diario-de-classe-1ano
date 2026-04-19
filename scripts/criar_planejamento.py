@@ -2,7 +2,6 @@
 import os
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
-from openpyxl.formatting.rule import CellIsRule
 from openpyxl.utils import get_column_letter
 
 DISCIPLINAS = ["Português", "Matemática", "Ciências", "História", "Geografia", "Artes"]
