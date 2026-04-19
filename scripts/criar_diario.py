@@ -117,6 +117,46 @@ def add_presenca_sheets(wb):
 
         ws.freeze_panes = "C2"
 
+def add_notas_sheets(wb):
+    red_fill    = _fill("FFC7CE")
+    yellow_fill = _fill("FFEB9C")
+    green_fill  = _fill("C6EFCE")
+
+    for b in BIMESTRES:
+        ws = wb.create_sheet(f"Notas - {b}")
+        ws.sheet_properties.tabColor = "375623"
+
+        headers = ["Nº", "Nome"] + DISCIPLINAS + ["Média Geral"]
+        larguras = [5, 30, 14, 14, 12, 12, 12, 10, 13]
+        for col, (h, w) in enumerate(zip(headers, larguras), 1):
+            aplicar_header(ws.cell(row=1, column=col), h)
+            ws.column_dimensions[get_column_letter(col)].width = w
+
+        ws.row_dimensions[1].height = 25
+
+        for row in range(2, N_ALUNOS + 2):
+            ws.cell(row=row, column=1, value=row - 1)
+            ws.cell(row=row, column=2).value = f"=Turma!B{row}"
+            # Média das 6 disciplinas (cols C=3 a H=8)
+            ws.cell(row=row, column=9).value = f'=IFERROR(AVERAGE(C{row}:H{row}),"")'
+            ws.cell(row=row, column=9).number_format = "0.0"
+            for col in range(1, 10):
+                estilizar_dado(ws.cell(row=row, column=col))
+
+        # Formatação condicional: vermelho < 5, amarelo 5–6.9, verde >= 7
+        grade_range = f"C2:I{N_ALUNOS + 1}"
+        ws.conditional_formatting.add(
+            grade_range, CellIsRule(operator="lessThan", formula=["5"], fill=red_fill)
+        )
+        ws.conditional_formatting.add(
+            grade_range, CellIsRule(operator="between", formula=["5", "6.9"], fill=yellow_fill)
+        )
+        ws.conditional_formatting.add(
+            grade_range, CellIsRule(operator="greaterThanOrEqual", formula=["7"], fill=green_fill)
+        )
+
+        ws.freeze_panes = "C2"
+
 def main():
     saida = os.path.join(os.path.dirname(__file__), "..", "diario-de-classe.xlsx")
     wb = openpyxl.Workbook()
@@ -124,6 +164,7 @@ def main():
 
     add_turma(wb)
     add_presenca_sheets(wb)
+    add_notas_sheets(wb)
 
     wb.save(saida)
     print(f"Gerado: {os.path.abspath(saida)}")
