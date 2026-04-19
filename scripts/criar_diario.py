@@ -157,6 +157,101 @@ def add_notas_sheets(wb):
 
         ws.freeze_panes = "C2"
 
+def add_recuperacao(wb):
+    ws = wb.create_sheet("Recuperação")
+    ws.sheet_properties.tabColor = "FF0000"
+
+    headers = [
+        ("Bimestre",       12),
+        ("Nº Aluno",        9),
+        ("Nome do Aluno",  30),
+        ("Disciplina",     14),
+        ("Nota Original",  14),
+        ("Nota Recup.",    14),
+        ("Situação Final", 16),
+    ]
+    for col, (titulo, largura) in enumerate(headers, 1):
+        aplicar_header(ws.cell(row=1, column=col), titulo)
+        ws.column_dimensions[get_column_letter(col)].width = largura
+
+    ws.row_dimensions[1].height = 25
+
+    # Pré-popular 40 linhas em branco com fórmula de Situação Final
+    for row in range(2, 42):
+        ws.cell(row=row, column=7).value = (
+            f'=IF(F{row}="","",IF(F{row}>=5,"Aprovado","Em recuperação"))'
+        )
+        for col in range(1, 8):
+            estilizar_dado(ws.cell(row=row, column=col))
+
+    ws.conditional_formatting.add(
+        "G2:G41",
+        CellIsRule(operator="equal", formula=['"Aprovado"'], fill=_fill("C6EFCE"))
+    )
+    ws.conditional_formatting.add(
+        "G2:G41",
+        CellIsRule(operator="equal", formula=['"Em recuperação"'], fill=_fill("FFC7CE"))
+    )
+
+    ws.freeze_panes = "A2"
+
+
+def add_contatos(wb):
+    ws = wb.create_sheet("Contatos e Reuniões")
+    ws.sheet_properties.tabColor = "FF9900"
+
+    headers = [
+        ("Data",          12),
+        ("Nº Aluno",       9),
+        ("Nome do Aluno", 30),
+        ("Responsável",   25),
+        ("Tipo",          14),
+        ("Assunto",       40),
+        ("Encaminhamento",40),
+    ]
+    for col, (titulo, largura) in enumerate(headers, 1):
+        aplicar_header(ws.cell(row=1, column=col), titulo)
+        ws.column_dimensions[get_column_letter(col)].width = largura
+
+    ws.row_dimensions[1].height = 25
+
+    for row in range(2, 102):  # 100 linhas
+        for col in range(1, 8):
+            estilizar_dado(ws.cell(row=row, column=col), centralizar=(col in [1, 2, 5]))
+
+    ws.freeze_panes = "A2"
+
+
+def add_ocorrencias(wb):
+    ws = wb.create_sheet("Ocorrências")
+    ws.sheet_properties.tabColor = "9900FF"
+
+    headers = [
+        ("Data",           12),
+        ("Nº Aluno",        9),
+        ("Nome do Aluno",  30),
+        ("Descrição",      50),
+        ("Providência",    50),
+    ]
+    for col, (titulo, largura) in enumerate(headers, 1):
+        aplicar_header(ws.cell(row=1, column=col), titulo)
+        ws.column_dimensions[get_column_letter(col)].width = largura
+
+    ws.row_dimensions[1].height = 25
+
+    for row in range(2, 102):
+        for col in range(1, 6):
+            c = ws.cell(row=row, column=col)
+            c.border = _border()
+            c.alignment = Alignment(
+                horizontal="center" if col in [1, 2] else "left",
+                vertical="top",
+                wrap_text=True
+            )
+        ws.row_dimensions[row].height = 40
+
+    ws.freeze_panes = "A2"
+
 def main():
     saida = os.path.join(os.path.dirname(__file__), "..", "diario-de-classe.xlsx")
     wb = openpyxl.Workbook()
@@ -165,6 +260,9 @@ def main():
     add_turma(wb)
     add_presenca_sheets(wb)
     add_notas_sheets(wb)
+    add_recuperacao(wb)
+    add_contatos(wb)
+    add_ocorrencias(wb)
 
     wb.save(saida)
     print(f"Gerado: {os.path.abspath(saida)}")
